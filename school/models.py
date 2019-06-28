@@ -22,7 +22,7 @@ class GradeProfile(models.Model):
         (2, '理科班'),
         (3, '艺术班'),
     )
-    grade = models.OneToOneField(Grade, on_delete=models.CASCADE, related_name='profile', verbose_name="班级")
+    grade = models.OneToOneField(Grade, on_delete=models.CASCADE, null=True, blank=True, related_name='profile', verbose_name="班级")
     email = models.EmailField(max_length=64, verbose_name="邮箱")
     anniversary = models.DateField(verbose_name="班庆日")
     just_datetime = models.DateTimeField(verbose_name="日期时间")
