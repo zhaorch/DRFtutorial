@@ -14,12 +14,12 @@ def CommonValidate(value):
 
 
 class GradeProfileSerializer(serializers.ModelSerializer):
-    # id = serializers.IntegerField(read_only=False)
     just_datetime = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
-    # grade = serializers.IntegerField(write_only=True)
     class Meta:
         model = GradeProfile
-        fields = "__all__"
+        # fields = "__all__"
+        exclude = ('grade',)
+
 
 
 class GradeSerializer(serializers.ModelSerializer):
@@ -60,10 +60,10 @@ class GradeSerializer(serializers.ModelSerializer):
         instance.save()
 
         profile = instance.profile
-        id = profile_data.pop("id", None)
+        # id = profile_data.pop("id", None)
         profile_data['grade']=instance
-        newProfile, _created = GradeProfile.objects.update_or_create(id=id, defaults={**profile_data})
-        instance.profile = profile
+        newProfile, _created = GradeProfile.objects.update_or_create(id=instance.profile.id, defaults={**profile_data})
+        instance.profile = newProfile
 
         return instance
 
