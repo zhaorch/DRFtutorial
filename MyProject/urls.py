@@ -15,22 +15,37 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include,re_path
+from django.views.static import serve
 from rest_framework import routers
+from rest_framework_jwt.views import obtain_jwt_token
+
+from MyProject.settings import MEDIA_ROOT
 from school.views import GradeViewSet
 from school.view_tutorial import GradeListView, GradeListView2, GradeListView3, GradeListView4
 from school.view_tutorial import GradeListAPIView, GradeListAPIView2
 from school.view_tutorial import GradeGenericAPIView, GradeGenericAPIView2, GradeGenericAPIView3
 from school.view_tutorial import GradViewSetTemp, GradeGenericViewSet
+from school.view_user import UserViewSet
 
 router = routers.DefaultRouter()
 router.register("grades",GradeViewSet,"grades")
 router.register("study/grades0", GradViewSetTemp,"grades0")
 router.register("study/grades8", GradeGenericViewSet,"grades8")
 
+router2 = routers.DefaultRouter()
+router2.register("users",UserViewSet,"users")
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include(router.urls)),
+
+    # 配置上传文件的访问处理函数
+    re_path(r'^media/(?P<path>.*)$', serve, {"document_root": MEDIA_ROOT}),
+
+    path('api/', include(router.urls)),
+    path('', include(router2.urls)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    # JWF 认证接口
+    path(r'login/', obtain_jwt_token),
 
     path('study/grades/', GradeListView.as_view()),
     path('study/grades2/', GradeListView2.as_view()),

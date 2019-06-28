@@ -4,7 +4,7 @@ from django.http import HttpResponse, JsonResponse, Http404
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, mixins, generics, viewsets
+from rest_framework import status, mixins, generics, viewsets, permissions
 from rest_framework.pagination import PageNumberPagination
 
 from .serializers import GradeSerializer
@@ -179,12 +179,42 @@ class GradViewSetTemp(viewsets.ViewSet):
 # -----------------------------------------------------------------
 
 
+from rest_framework.decorators import action,detail_route,list_route
+
+
 # class GradeGenericViewSet(viewsets.ModelViewSet): 可简写为ModelViewSet,继承了增删改查的所有方法
 class GradeGenericViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,mixins.CreateModelMixin,
                           mixins.UpdateModelMixin,mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Grade.objects.all()
     serializer_class = GradeSerializer
     pagination_class = GoodsPagination
+
+    #@action(methods=['get'], detail=True, url_path='info', url_name='detail')
+    @detail_route(methods=['get'], url_path='info', url_name='detail')
+    def get_grade_info(self, request, pk=None):
+        grade = self.get_object()
+        serializer = GradeSerializer(grade, many=False)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+
+    # @detail_route(methods=['get'], url_path='info2', url_name='info2')
+    @list_route(methods=['get'], url_path='info2', url_name='info2')
+    def get_grade_info2(self, request, pk=None) :
+        json_list = []
+        for i in range(10):
+            json_dict = dict()
+            json_dict['name'] = i
+            json_dict['desc'] = i+1000
+            json_list.append(json_dict)
+        return Response([temp['desc'] for temp in json_list], status=status.HTTP_200_OK)
+
+    @list_route(methods=['get'], url_path='clist', url_name='detail')
+    def get_grade_list(self,request):
+        name = request.query_params.get("name", '')
+        list = Grade.objects.filter(name__contains=name)
+        serializer = GradeSerializer(list, many=True)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
 
 
