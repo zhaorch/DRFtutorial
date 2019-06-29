@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from django.db import transaction
 
-from .models import Grade, GradeProfile
+from .models import Grade, GradeProfile, Student, StudentGoods
 
 
 def common_validate(value):
@@ -75,7 +75,6 @@ class GradeSerializer(serializers.ModelSerializer):
                 message='名字和简介必须唯一')]
 
 
-
 class GradeSerializer2(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(max_length=32)
@@ -89,5 +88,59 @@ class GradeSerializer2(serializers.Serializer):
     def update(self, instance, validated_data) :
         instance.name = validated_data.get('name', instance.name)
         instance.desc = validated_data.get('desc', instance.desc)
+        instance.save()
+        return instance
+
+
+class StudentGoodsSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=False, required=False)
+
+    class Meta:
+        model = StudentGoods
+        exclude = ('student',)
+
+
+class StudentSerializer(serializers.ModelSerializer):
+    goods = StudentGoodsSerializer(many=True)
+
+    class Meta:
+        model = Student
+        fields = "__all__"
+
+    @transaction.atomic
+    def create(self, validated_data):
+        goods_list = validated_data.pop("goods")
+        instance = Student.objects.create(**validated_data)
+
+        new_goods = []
+        for goods in goods_list:
+            new_goods.append(StudentGoods.objects.create(student=instance, **goods))
+
+        return instance
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        new_goods = []
+        if 'goods' in validated_data:
+            ids_new = []
+            ids_pre = StudentGoods.objects.all().filter(student=instance).values_list('id', flat=True)
+            for param in validated_data.pop('goods'):
+                param["student"] = instance
+                id = param.pop("id", None)
+                ans, _created = StudentGoods.objects.update_or_create(id=id, defaults={**param})
+                ids_new.append(ans.id)
+                new_goods.append(ans)
+
+            delete_ids = set(ids_pre) - set(ids_new)
+            StudentGoods.objects.filter(id__in=delete_ids).delete()
+
+        from rest_framework.utils import model_meta
+        info = model_meta.get_field_info(instance)
+        for attr, value in validated_data.items():
+            if attr in info.relations and info.relations[attr].to_many:
+                field = getattr(instance, attr)
+                field.set(value)
+            else:
+                setattr(instance, attr, value)
         instance.save()
         return instance

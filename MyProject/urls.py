@@ -20,7 +20,7 @@ from rest_framework import routers
 from rest_framework_jwt.views import obtain_jwt_token
 
 from MyProject.settings import MEDIA_ROOT
-from school.views import GradeViewSet
+from school.views import GradeViewSet, StudentViewSet
 from school.view_tutorial import GradeListView, GradeListView2, GradeListView3, GradeListView4
 from school.view_tutorial import GradeListAPIView, GradeListAPIView2
 from school.view_tutorial import GradeGenericAPIView, GradeGenericAPIView2, GradeGenericAPIView3
@@ -28,12 +28,13 @@ from school.view_tutorial import GradViewSetTemp, GradeGenericViewSet
 from school.view_user import UserViewSet
 
 router = routers.DefaultRouter()
-router.register("grades",GradeViewSet,"grades")
-router.register("study/grades0", GradViewSetTemp,"grades0")
-router.register("study/grades8", GradeGenericViewSet,"grades8")
+router.register("grades", GradeViewSet, "grades")
+router.register("study/grades0", GradViewSetTemp, "grades0")
+router.register("study/grades8", GradeGenericViewSet, "grades8")
+router.register("students", StudentViewSet, "students")
 
 router2 = routers.DefaultRouter()
-router2.register("users",UserViewSet,"users")
+router2.register("users", UserViewSet, "users")
 
 urlpatterns = [
     path('admin/', admin.site.urls),

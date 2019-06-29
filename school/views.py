@@ -1,8 +1,8 @@
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
 
-from .models import Grade
-from .serializers import GradeSerializer,GradeSerializer2
+from .models import Grade, Student
+from .serializers import GradeSerializer, GradeSerializer2, StudentSerializer
 
 
 class GradePagination(PageNumberPagination):
@@ -15,4 +15,10 @@ class GradePagination(PageNumberPagination):
 class GradeViewSet(viewsets.ModelViewSet):
     queryset = Grade.objects.all()
     serializer_class = GradeSerializer
+    pagination_class = GradePagination
+
+
+class StudentViewSet(viewsets.ModelViewSet):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
     pagination_class = GradePagination

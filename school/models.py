@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class Grade(models.Model) :
+class Grade(models.Model):
     name = models.CharField(max_length=32, unique=True, verbose_name="班级名称")
     desc = models.CharField(max_length=1024, verbose_name="简介")
     created_time = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
@@ -37,3 +37,33 @@ class GradeProfile(models.Model):
 
     def __str__(self) :
         return self.email
+
+
+class Student(models.Model):
+    no = models.CharField(max_length=32, unique=True, verbose_name="学号")
+    name = models.CharField(max_length=32, verbose_name="姓名")
+    gender = models.BooleanField(default=0, verbose_name="性别")
+    birthday = models.DateField(null=True, blank=True, verbose_name="出生年月")
+    grade = models.ForeignKey(Grade, verbose_name="班级", null=True, blank=True, on_delete=models.SET_NULL)
+
+    class Meta:
+        verbose_name = "学生"
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return "{0}({1})".format(self.name, self.no)
+
+
+class StudentGoods(models.Model):
+    name = models.CharField(max_length=32, verbose_name="名称")
+    price = models.FloatField(default=0, verbose_name="单价")
+    number = models.PositiveIntegerField(default=1, verbose_name="数量")
+    student = models.ForeignKey(Student, verbose_name="归属", null=True, blank=True, related_name="goods", on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "学生物品"
+        verbose_name_plural = verbose_name
+        unique_together = ('name', 'student')
+
+    def __str__(self):
+        return self.name
