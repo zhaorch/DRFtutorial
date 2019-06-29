@@ -8,22 +8,22 @@ from django.db import transaction
 from .models import Grade, GradeProfile
 
 
-def CommonValidate(value):
+def common_validate(value):
     if '高' not in value or '班' not in value :
         raise serializers.ValidationError('名称必须包含高/班')
 
 
 class GradeProfileSerializer(serializers.ModelSerializer):
     just_datetime = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
+
     class Meta:
         model = GradeProfile
         # fields = "__all__"
         exclude = ('grade',)
 
 
-
 class GradeSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(max_length=32, validators=[CommonValidate])
+    name = serializers.CharField(max_length=32, validators=[common_validate])
     created_time = serializers.DateTimeField(read_only=True, format='%Y-%m-%d %H:%M:%S')
     updated_time = serializers.DateTimeField(read_only=True, format='%Y-%m-%d %H:%M:%S')
     profile = GradeProfileSerializer()
@@ -59,11 +59,10 @@ class GradeSerializer(serializers.ModelSerializer):
                 setattr(instance, attr, value)
         instance.save()
 
-        profile = instance.profile
         # id = profile_data.pop("id", None)
         profile_data['grade']=instance
-        newProfile, _created = GradeProfile.objects.update_or_create(id=instance.profile.id, defaults={**profile_data})
-        instance.profile = newProfile
+        new_profile, _created = GradeProfile.objects.update_or_create(id=instance.profile.id, defaults={**profile_data})
+        instance.profile = new_profile
 
         return instance
 
