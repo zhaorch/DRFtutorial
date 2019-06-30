@@ -67,3 +67,28 @@ class StudentGoods(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Course(models.Model):
+    name = models.CharField(max_length=32, unique=True, verbose_name='课程名称')
+    desc = models.CharField(max_length=1024, verbose_name="简介")
+
+    class Meta :
+        verbose_name = "课程"
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.name
+
+
+class StudentCourse(models.Model):
+    student = models.ForeignKey(Student, verbose_name="学生", null=True, blank=True, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, verbose_name="课程", null=True, blank=True, on_delete=models.CASCADE)
+    desc = models.CharField(max_length=1024, verbose_name="其他信息")
+
+    class Meta :
+        verbose_name = "课程"
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return "{0}-{1}".format(self.student, self.course)
