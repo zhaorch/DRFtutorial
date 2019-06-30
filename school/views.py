@@ -56,7 +56,8 @@ class StudentViewSet(viewsets.ModelViewSet):
                 param.pop("isSet", None)
                 id = param.pop("id", None)
                 course_data = param.pop("course")
-                course = Course.objects.get(id=course_data['id'])
+                course = Course(**course_data)
+                # course = Course.objects.get(id=course_data['id'])
                 param["student"] = instance
                 param["course"] = course
                 ans, _created = StudentCourse.objects.update_or_create(id=id, defaults={**param})
