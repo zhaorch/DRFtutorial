@@ -82,7 +82,7 @@ class Course(models.Model):
 
 
 class StudentCourse(models.Model):
-    student = models.ForeignKey(Student, verbose_name="学生", null=True, blank=True, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, verbose_name="学生", null=True, blank=True, related_name='courses', on_delete=models.CASCADE)
     course = models.ForeignKey(Course, verbose_name="课程", null=True, blank=True, on_delete=models.CASCADE)
     desc = models.CharField(max_length=1024, verbose_name="其他信息")
 

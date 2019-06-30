@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from django.db import transaction
 
-from .models import Grade, GradeProfile, Student, StudentGoods, Course
+from .models import Grade, GradeProfile, Student, StudentGoods, Course, StudentCourse
 
 
 def common_validate(value):
@@ -146,7 +146,34 @@ class StudentSerializer(serializers.ModelSerializer):
         return instance
 
 
+# ---------------------------
+# class StudentNameSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Student
+#         fields = ('id', 'name')
+
+
 class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = "__all__"
+
+
+class StudentCourseSerializer(serializers.ModelSerializer):
+    course = CourseSerializer(many=False)
+
+    class Meta:
+        model = StudentCourse
+        fields = "__all__"
+
+
+class StudentCourseListSerializer(serializers.ModelSerializer):
+    courses = StudentCourseSerializer(many=True)
+    grade = GradeSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = Student
+        fields = "__all__"
+
+
+

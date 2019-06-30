@@ -119,7 +119,6 @@ class GradeGenericAPIView(mixins.ListModelMixin, generics.GenericAPIView):
     serializer_class = GradeSerializer
     pagination_class = GoodsPagination
 
-
     def get(self, request, *args, **kwargs) :
         return self.list(request, *args, **kwargs)
 
