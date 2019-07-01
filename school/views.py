@@ -6,6 +6,7 @@ from rest_framework_extensions.mixins import PaginateByMaxMixin
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle, ScopedRateThrottle
+from rest_framework_extensions.cache.mixins import CacheResponseMixin
 
 from .models import Grade, Student, Course, StudentCourse
 from .serializers import GradeSerializer, GradeSerializer2, StudentSerializer, CourseSerializer
@@ -33,7 +34,7 @@ class ZRCRateThrottle(UserRateThrottle):
     scope = 'zrc'
 
 
-class GradeViewSet(viewsets.ModelViewSet):
+class GradeViewSet(CacheResponseMixin, viewsets.ModelViewSet):
     queryset = Grade.objects.all().select_related("profile").order_by("created_time")
     serializer_class = GradeSerializer
     pagination_class = CommonPagination
