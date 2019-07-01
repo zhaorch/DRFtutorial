@@ -1,30 +1,61 @@
-from rest_framework import viewsets, mixins, status
+from rest_framework import viewsets, mixins, status, permissions, authentication, filters
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import detail_route, list_route
+from rest_framework_extensions.mixins import PaginateByMaxMixin
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.throttling import UserRateThrottle, AnonRateThrottle, ScopedRateThrottle
 
 from .models import Grade, Student, Course, StudentCourse
 from .serializers import GradeSerializer, GradeSerializer2, StudentSerializer, CourseSerializer
 from .serializers import StudentCourseListSerializer
+from .filters import GradeFilter
 
 
-class GradePagination(PageNumberPagination):
+class CommonPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'limit'
     page_query_param = "page"
     max_page_size = 100
 
 
+class CommonPermission(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        a = request.resolver_match.url_name
+        return request.user.is_superuser == 1
+
+
+class ZRCRateThrottle(UserRateThrottle):
+    scope = 'zrc'
+
+
 class GradeViewSet(viewsets.ModelViewSet):
-    queryset = Grade.objects.all()
+    queryset = Grade.objects.all().select_related("profile").order_by("created_time")
     serializer_class = GradeSerializer
-    pagination_class = GradePagination
+    pagination_class = CommonPagination
+
+    authentication_classes = (JSONWebTokenAuthentication, authentication.SessionAuthentication,)
+    # permission_classes = (permissions.IsAuthenticatedOrReadOnly, CommonPermission)
+    # authentication_classes = (authentication.BasicAuthentication, authentication.SessionAuthentication,)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
+    filter_class = GradeFilter
+    search_fields = ('name', 'profile__email')
+    ordering_fields = ('name',)
+    # throttle_classes = (UserRateThrottle,)
+    # throttle_classes = (ZRCRateThrottle, AnonRateThrottle, ScopedRateThrottle)
+    # throttle_scope = 'abc'
+    throttle_classes = (UserRateThrottle, AnonRateThrottle)
 
 
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
-    pagination_class = GradePagination
+    pagination_class = CommonPagination
 
     @list_route(methods=['get'])
     def list_student_course(self, request,format=None):
@@ -73,4 +104,4 @@ class StudentViewSet(viewsets.ModelViewSet):
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
-    pagination_class = GradePagination
+    pagination_class = CommonPagination

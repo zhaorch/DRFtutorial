@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'school.apps.SchoolConfig',
     'corsheaders',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -129,6 +130,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         #'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.BasicAuthentication',
@@ -136,7 +138,21 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 5,
-    'ORDERING_PARAM': 'sort'
+    'ORDERING_PARAM': 'sort',
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ),
+    # 'DEFAULT_THROTTLE_RATES': {
+    #     'anon': '5/min',
+    #     'user': '10/min',
+    #     'zrc': '8/min',
+    #     'abc': '1/min'
+    # }
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',
+        'user': '1000/day'
+    }
 }
 
 import datetime
