@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'school.apps.SchoolConfig',
     'corsheaders',
     'django_filters',
+    'tinymce',
 ]
 
 MIDDLEWARE = [

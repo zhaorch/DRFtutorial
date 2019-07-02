@@ -1,4 +1,5 @@
 from django.db import models
+from tinymce.models import HTMLField
 
 
 class Grade(models.Model):
@@ -29,7 +30,8 @@ class GradeProfile(models.Model):
     type = models.SmallIntegerField(choices=GRADE_TYPE, default=1, verbose_name="类型")
     star = models.IntegerField(default=0, verbose_name="星级")
     logo = models.ImageField(max_length=200, null=True, blank=True, upload_to="grade/logo/")
-    info = models.TextField(null=True, blank=True, verbose_name="其他信息")
+    # info = models.TextField(null=True, blank=True, verbose_name="其他信息")
+    info = HTMLField(null=True, blank=True, verbose_name="其他信息")
 
     class Meta :
         verbose_name = "班级档案"

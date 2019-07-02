@@ -43,6 +43,7 @@ urlpatterns = [
 
     # 配置上传文件的访问处理函数
     re_path(r'^media/(?P<path>.*)$', serve, {"document_root": MEDIA_ROOT}),
+    re_path(r'^tinymce/', include('tinymce.urls')),
 
     path('api/', include(router.urls)),
     path('', include(router2.urls)),
@@ -50,6 +51,7 @@ urlpatterns = [
     # JWF 认证接口
     path('login/', obtain_jwt_token),
     path('docs/', include_docs_urls(title="ZRC")),
+
 
     path('study/grades/', GradeListView.as_view()),
     path('study/grades2/', GradeListView2.as_view()),
