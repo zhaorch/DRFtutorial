@@ -34,7 +34,8 @@ class ZRCRateThrottle(UserRateThrottle):
     scope = 'zrc'
 
 
-class GradeViewSet(CacheResponseMixin, viewsets.ModelViewSet):
+#class GradeViewSet(CacheResponseMixin, viewsets.ModelViewSet):
+class GradeViewSet(viewsets.ModelViewSet) :
     queryset = Grade.objects.all().select_related("profile").order_by("created_time")
     serializer_class = GradeSerializer
     pagination_class = CommonPagination

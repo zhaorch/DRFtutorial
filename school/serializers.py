@@ -8,13 +8,65 @@ from django.db import transaction
 from .models import Grade, GradeProfile, Student, StudentGoods, Course, StudentCourse
 
 
+class Base64ImageField(serializers.ImageField):
+    """
+    A Django REST framework field for handling image-uploads through raw post data.
+    It uses base64 for encoding and decoding the contents of the file.
+
+    Heavily based on
+    https://github.com/tomchristie/django-rest-framework/pull/1268
+
+    Updated for Django REST framework 3.
+    """
+
+    def to_internal_value(self, data):
+        from django.core.files.base import ContentFile
+        import base64
+        import six
+        import uuid
+
+        # Check if this is a base64 string
+        if isinstance(data, six.string_types):
+            # Check if the base64 string is in the "data:" format
+            if 'data:' in data and ';base64,' in data:
+                # Break out the header from the base64 content
+                header, data = data.split(';base64,')
+
+            # Try to decode the file. Return validation error if it fails.
+            try:
+                decoded_file = base64.b64decode(data)
+            except TypeError:
+                self.fail('invalid_image')
+
+            # Generate file name:
+            file_name = str(uuid.uuid4())[:12] # 12 characters are more than enough.
+            # Get the file name extension:
+            file_extension = self.get_file_extension(file_name, decoded_file)
+
+            complete_file_name = "%s.%s" % (file_name, file_extension, )
+
+            data = ContentFile(decoded_file, name=complete_file_name)
+
+        return super(Base64ImageField, self).to_internal_value(data)
+
+    def get_file_extension(self, file_name, decoded_file):
+        import imghdr
+
+        extension = imghdr.what(file_name, decoded_file)
+        extension = "jpg" if extension == "jpeg" else extension
+
+        return extension
+
+
 def common_validate(value):
     if '高' not in value or '班' not in value :
         raise serializers.ValidationError('名称必须包含高/班')
 
 
 class GradeProfileSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=False, required=False)
     just_datetime = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
+    logo = Base64ImageField(max_length=None, use_url=True, allow_empty_file=True, allow_null=True)
 
     class Meta:
         model = GradeProfile
@@ -59,9 +111,12 @@ class GradeSerializer(serializers.ModelSerializer):
                 setattr(instance, attr, value)
         instance.save()
 
-        # id = profile_data.pop("id", None)
+        id = profile_data.pop("id", None)
         profile_data['grade']=instance
-        new_profile, _created = GradeProfile.objects.update_or_create(id=instance.profile.id, defaults={**profile_data})
+        # id = None
+        # if instance.profile:
+        #     id = instance.profile.id
+        new_profile, _created = GradeProfile.objects.update_or_create(id=id, defaults={**profile_data})
         instance.profile = new_profile
 
         return instance
