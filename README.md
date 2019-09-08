@@ -11,3 +11,7 @@ pip install -r requirements.txt
 python manage.py runserver
 
 ## TEST
+```python
+class ZRCRateThrottle(UserRateThrottle):
+    scope = 'zrc'
+```
